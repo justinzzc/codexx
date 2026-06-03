@@ -1,0 +1,25 @@
+{
+  "name": "@metav_xly/codexx",
+  "version": "0.1.0",
+  "description": "Resume Codex CLI sessions for the current working directory across providers.",
+  "bin": {
+    "codexx": "./bin/codexx.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "codex",
+    "cli",
+    "resume"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
