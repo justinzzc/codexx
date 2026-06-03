@@ -1,6 +1,6 @@
 {
   "name": "@metav_xly/codexx",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Resume Codex CLI sessions for the current working directory across providers.",
   "bin": {
     "codexx": "./bin/codexx.js"
@@ -15,7 +15,7 @@
     "n-unlink": "npm unlink @metav_xly/codexx",
     "n-login": "npm login --registry=https://registry.npmjs.org",
     "n-create-tag": "git tag v%npm_package_version% && git push origin v%npm_package_version%",
-    "n-publish": "npm run n-create-tag && npm publish --tag=latest --registry=https://registry.npmjs.org",
+    "n-publish": "npm run n-create-tag && npm publish --tag=latest --registry=https://registry.npmjs.org --access public",
     "test": "node --test"
   },
   "keywords": [
