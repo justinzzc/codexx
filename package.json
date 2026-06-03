@@ -1,6 +1,6 @@
 {
   "name": "@metav_xly/codexx",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Resume Codex CLI sessions for the current working directory across providers.",
   "bin": {
     "codexx": "./bin/codexx.js"
@@ -8,7 +8,8 @@
   "files": [
     "bin",
     "src",
-    "README.md"
+    "README.md",
+    "README.zh-CN.md"
   ],
   "scripts": {
     "n-link": "npm link",
