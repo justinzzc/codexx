@@ -2,6 +2,8 @@
 
 `codexx` 是一个给 Codex CLI 准备的小工具，专门解决「切换 provider 之后，resume 找不到旧会话」这个问题。
 
+GitHub 仓库：https://github.com/justinzzc/codexx
+
 那些会话通常并没有丢。它们还在 `~/.codex/sessions` 里，只是 Codex 原生的
 `resume` 列表会受当前 `model_provider` 影响，看起来像是某些会话突然消失了。
 `codexx` 做的事情很简单：从本地 session 元数据里把当前项目相关的会话找出来，不管它们属于哪个 provider。

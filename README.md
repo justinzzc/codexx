@@ -2,6 +2,8 @@
 
 `codexx` is a small companion CLI for people who switch Codex CLI model providers.
 
+GitHub: https://github.com/justinzzc/codexx
+
 Codex sessions are still there after you switch providers, but the normal
 `codex resume` picker can feel like a locked drawer: sessions created under a
 different `model_provider` may no longer appear in the list you are looking at.
