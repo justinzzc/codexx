@@ -8,8 +8,10 @@ const {
   buildNativeResumeCommand,
   buildResumeCommand,
   findSessions,
+  formatProvider,
   groupProviders,
   loadSessionIndex,
+  normalizePath,
 } = require("../src/session-store");
 
 async function writeSession(root, day, sessionId, cwd, provider, timestamp) {
@@ -102,23 +104,62 @@ test("buildResumeCommand uses session provider by default", () => {
   assert.deepEqual(command, ["codex", "-c", 'model_provider="custom"', "resume", "abc-123"]);
 });
 
-test("groupProviders counts sessions by provider", () => {
+test("groupProviders counts sessions by provider and includes up to three previews", () => {
   const providers = groupProviders([
-    { provider: "custom" },
-    { provider: "openai" },
-    { provider: "openai" },
-    { provider: "" },
+    { provider: "custom", timestamp: "2026-06-02T10:00:00Z", threadName: "Custom work" },
+    { provider: "openai", timestamp: "2026-06-04T10:00:00Z", threadName: "Fourth openai work" },
+    { provider: "openai", timestamp: "2026-06-03T10:00:00Z", threadName: "Third openai work" },
+    { provider: "openai", timestamp: "2026-06-02T10:00:00Z", threadName: "Second openai work" },
+    { provider: "openai", timestamp: "2026-06-01T10:00:00Z", threadName: "First openai work" },
+    { provider: "", timestamp: "2026-06-01T09:00:00Z", threadName: "" },
   ]);
 
-  assert.deepEqual(providers, [
-    { provider: "openai", count: 2 },
-    { provider: "custom", count: 1 },
-    { provider: "unknown", count: 1 },
-  ]);
+  assert.equal(providers[0].provider, "openai");
+  assert.equal(providers[0].count, 4);
+  assert.deepEqual(
+    providers[0].previews.map((preview) => preview.title),
+    ["Fourth openai work", "Third openai work", "Second openai work"],
+  );
+  assert.equal(providers[1].provider, "custom");
+  assert.equal(providers[2].provider, "unknown");
+});
+
+test("formatProvider renders count and session previews", () => {
+  const text = formatProvider(1, {
+    provider: "openai",
+    count: 2,
+    previews: [
+      { when: "2026-06-03T10:00:00Z", title: "Analyze architecture" },
+      { when: "2026-06-02T10:00:00Z", title: "(untitled)" },
+    ],
+  });
+
+  assert.equal(
+    text,
+    " 1. [openai]  2 sessions\n    - 2026-06-03T10:00:00Z  Analyze architecture\n    - 2026-06-02T10:00:00Z  (untitled)",
+  );
 });
 
 test("buildNativeResumeCommand enters codex native picker for provider", () => {
   const command = buildNativeResumeCommand({ provider: "openai", codexCommand: "codex" });
 
   assert.deepEqual(command, ["codex", "-c", 'model_provider="openai"', "resume"]);
+});
+
+test("normalizePath preserves case sensitivity on linux", () => {
+  assert.notEqual(
+    normalizePath("/home/me/Project", { platform: "linux" }),
+    normalizePath("/home/me/project", { platform: "linux" }),
+  );
+});
+
+test("normalizePath ignores case on windows and macos", () => {
+  assert.equal(
+    normalizePath("C:\\work\\Project", { platform: "win32" }),
+    normalizePath("C:\\work\\project", { platform: "win32" }),
+  );
+  assert.equal(
+    normalizePath("/Users/me/Project", { platform: "darwin" }),
+    normalizePath("/Users/me/project", { platform: "darwin" }),
+  );
 });

@@ -71,11 +71,16 @@ original resume UI, previews, and expansion behavior, use native mode:
 codexx resume --native
 ```
 
-It first asks which provider you want:
+It first asks which provider you want, with up to three recent session previews
+under each provider:
 
 ```text
  1. [openai]  3 sessions
+    - 2026-06-02T03:07:57.494Z  Analyze current architecture
+    - 2026-06-01T10:17:09.954Z  Validate Lark CLI adapter
+    - 2026-06-01T07:46:12.435Z  Create architecture diagram
  2. [custom]  1 sessions
+    - 2026-06-03T01:19:15.977Z  Fix missing resume session
 
 Select provider number:
 ```

@@ -9,6 +9,7 @@ const {
   buildResumeCommand,
   defaultCodexHome,
   findSessions,
+  formatProvider,
   formatSession,
   groupProviders,
   loadSessionIndex,
@@ -105,7 +106,7 @@ async function chooseSession(sessions) {
 
 async function chooseProvider(providers) {
   for (const [index, provider] of providers.entries()) {
-    console.log(`${String(index + 1).padStart(2, " ")}. [${provider.provider}]  ${provider.count} sessions`);
+    console.log(formatProvider(index + 1, provider));
   }
   console.log("");
 

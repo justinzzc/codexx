@@ -69,11 +69,15 @@ codex -c model_provider="openai" resume <session-id>
 codexx resume --native
 ```
 
-它会先让你选择 provider：
+它会先让你选择 provider，并在每个 provider 下面展示最多 3 条最近会话摘要：
 
 ```text
  1. [openai]  3 sessions
+    - 2026-06-02T03:07:57.494Z  分析当前架构
+    - 2026-06-01T10:17:09.954Z  检验飞书 CLI adapter
+    - 2026-06-01T07:46:12.435Z  生成架构图
  2. [custom]  1 sessions
+    - 2026-06-03T01:19:15.977Z  修复 resume 找不到旧会话
 
 Select provider number:
 ```

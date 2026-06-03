@@ -8,9 +8,12 @@ function defaultCodexHome() {
   return process.env.CODEX_HOME || path.join(os.homedir(), ".codex");
 }
 
-function normalizePath(inputPath) {
+function normalizePath(inputPath, options = {}) {
+  const platform = options.platform || process.platform;
   const text = String(inputPath || "").trim().replace(/^"|"$/g, "");
-  return path.resolve(text).replace(/[\\\/]+$/, "").toLowerCase();
+  const pathApi = platform === "win32" ? path.win32 : path.posix;
+  const normalized = pathApi.resolve(text).replace(/[\\\/]+$/, "");
+  return platform === "linux" ? normalized : normalized.toLowerCase();
 }
 
 async function loadSessionIndex(codexHome) {
@@ -236,19 +239,36 @@ function buildNativeResumeCommand({
 }
 
 function groupProviders(sessions) {
-  const counts = new Map();
+  const groups = new Map();
   for (const session of sessions) {
     const provider = session.provider || "unknown";
-    counts.set(provider, (counts.get(provider) || 0) + 1);
+    if (!groups.has(provider)) {
+      groups.set(provider, []);
+    }
+    groups.get(provider).push(session);
   }
-  return Array.from(counts.entries())
-    .map(([provider, count]) => ({ provider, count }))
+  return Array.from(groups.entries())
+    .map(([provider, providerSessions]) => ({
+      provider,
+      count: providerSessions.length,
+      previews: providerSessions.slice(0, 3).map((session) => ({
+        when: session.updatedAt || session.timestamp || "",
+        title: session.threadName || "(untitled)",
+      })),
+    }))
     .sort((left, right) => {
       if (right.count !== left.count) {
         return right.count - left.count;
       }
       return left.provider.localeCompare(right.provider);
     });
+}
+
+function formatProvider(index, provider) {
+  const header = `${String(index).padStart(2, " ")}. [${provider.provider}]  ${provider.count} sessions`;
+  const previews = (provider.previews || [])
+    .map((preview) => `    - ${preview.when}  ${preview.title}`);
+  return [header, ...previews].join("\n");
 }
 
 function formatSession(index, session) {
@@ -263,6 +283,7 @@ module.exports = {
   buildResumeCommand,
   defaultCodexHome,
   findSessions,
+  formatProvider,
   formatSession,
   groupProviders,
   loadSessionIndex,
