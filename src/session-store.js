@@ -223,6 +223,34 @@ function buildResumeCommand({
   return command;
 }
 
+function buildNativeResumeCommand({
+  provider,
+  codexCommand = "codex",
+}) {
+  const command = [codexCommand];
+  if (provider && provider !== "unknown") {
+    command.push("-c", `model_provider="${provider}"`);
+  }
+  command.push("resume");
+  return command;
+}
+
+function groupProviders(sessions) {
+  const counts = new Map();
+  for (const session of sessions) {
+    const provider = session.provider || "unknown";
+    counts.set(provider, (counts.get(provider) || 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .map(([provider, count]) => ({ provider, count }))
+    .sort((left, right) => {
+      if (right.count !== left.count) {
+        return right.count - left.count;
+      }
+      return left.provider.localeCompare(right.provider);
+    });
+}
+
 function formatSession(index, session) {
   const provider = session.provider || "unknown";
   const title = session.threadName || "(untitled)";
@@ -231,10 +259,12 @@ function formatSession(index, session) {
 }
 
 module.exports = {
+  buildNativeResumeCommand,
   buildResumeCommand,
   defaultCodexHome,
   findSessions,
   formatSession,
+  groupProviders,
   loadSessionIndex,
   normalizePath,
 };

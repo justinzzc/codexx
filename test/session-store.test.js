@@ -5,8 +5,10 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const {
+  buildNativeResumeCommand,
   buildResumeCommand,
   findSessions,
+  groupProviders,
   loadSessionIndex,
 } = require("../src/session-store");
 
@@ -98,4 +100,25 @@ test("buildResumeCommand uses session provider by default", () => {
   const command = buildResumeCommand({ sessionId: "abc-123", provider: "custom", codexCommand: "codex" });
 
   assert.deepEqual(command, ["codex", "-c", 'model_provider="custom"', "resume", "abc-123"]);
+});
+
+test("groupProviders counts sessions by provider", () => {
+  const providers = groupProviders([
+    { provider: "custom" },
+    { provider: "openai" },
+    { provider: "openai" },
+    { provider: "" },
+  ]);
+
+  assert.deepEqual(providers, [
+    { provider: "openai", count: 2 },
+    { provider: "custom", count: 1 },
+    { provider: "unknown", count: 1 },
+  ]);
+});
+
+test("buildNativeResumeCommand enters codex native picker for provider", () => {
+  const command = buildNativeResumeCommand({ provider: "openai", codexCommand: "codex" });
+
+  assert.deepEqual(command, ["codex", "-c", 'model_provider="openai"', "resume"]);
 });

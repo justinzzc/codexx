@@ -26,6 +26,8 @@ npm install -g codexx
 codexx resume
 codexx resume --latest
 codexx resume --latest --dry-run
+codexx resume --native
+codexx resume --native --provider openai
 codexx resume --provider openai
 codexx resume --cwd C:\path\to\project
 ```
@@ -40,4 +42,10 @@ Disable that behavior with:
 
 ```powershell
 codexx resume --no-provider-override
+```
+
+Use Codex's native resume picker after selecting a provider:
+
+```powershell
+codexx resume --native
 ```

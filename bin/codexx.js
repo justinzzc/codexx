@@ -5,10 +5,12 @@ const path = require("node:path");
 const readline = require("node:readline/promises");
 
 const {
+  buildNativeResumeCommand,
   buildResumeCommand,
   defaultCodexHome,
   findSessions,
   formatSession,
+  groupProviders,
   loadSessionIndex,
 } = require("../src/session-store");
 
@@ -19,6 +21,7 @@ function printUsage() {
 Options:
   --cwd <path>                Directory to match. Defaults to the current directory.
   --provider <name>           Optional provider filter.
+  --native                    Select a provider, then enter Codex's native resume picker.
   --latest                    Resume the most recently updated matching session.
   --dry-run                   Print the codex command instead of running it.
   --no-provider-override      Do not pass the session provider to codex.
@@ -34,6 +37,7 @@ function parseArgs(argv) {
     command,
     cwd: process.cwd(),
     provider: "",
+    native: false,
     latest: false,
     dryRun: false,
     noProviderOverride: false,
@@ -46,6 +50,8 @@ function parseArgs(argv) {
     const arg = rest[index];
     if (arg === "--latest") {
       options.latest = true;
+    } else if (arg === "--native") {
+      options.native = true;
     } else if (arg === "--dry-run") {
       options.dryRun = true;
     } else if (arg === "--no-provider-override") {
@@ -97,6 +103,28 @@ async function chooseSession(sessions) {
   }
 }
 
+async function chooseProvider(providers) {
+  for (const [index, provider] of providers.entries()) {
+    console.log(`${String(index + 1).padStart(2, " ")}. [${provider.provider}]  ${provider.count} sessions`);
+  }
+  console.log("");
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  try {
+    const answer = await rl.question("Select provider number: ");
+    const selectedIndex = Number.parseInt(answer.trim(), 10);
+    if (!Number.isInteger(selectedIndex) || selectedIndex < 1 || selectedIndex > providers.length) {
+      return null;
+    }
+    return providers[selectedIndex - 1];
+  } finally {
+    rl.close();
+  }
+}
+
 function commandToString(command) {
   return command.map((part) => {
     if (!/[ \t"]/.test(part)) {
@@ -121,6 +149,29 @@ async function resume(options) {
     return 1;
   }
 
+  if (options.native) {
+    const providers = groupProviders(sessions);
+    const selectedProvider = options.provider
+      ? providers.find((provider) => provider.provider === options.provider)
+      : await chooseProvider(providers);
+    if (!selectedProvider) {
+      console.error("No provider selected.");
+      return 1;
+    }
+
+    const command = buildNativeResumeCommand({
+      provider: selectedProvider.provider,
+      codexCommand: options.codexCommand,
+    });
+
+    if (options.dryRun) {
+      console.log(commandToString(command));
+      return 0;
+    }
+
+    return await runCommand(command);
+  }
+
   const session = options.latest ? sessions[0] : await chooseSession(sessions);
   if (!session) {
     console.error("No session selected.");
@@ -139,6 +190,10 @@ async function resume(options) {
     return 0;
   }
 
+  return await runCommand(command);
+}
+
+async function runCommand(command) {
   return await new Promise((resolve) => {
     const child = spawn(command[0], command.slice(1), { stdio: "inherit", shell: process.platform === "win32" });
     child.on("exit", (code) => resolve(code ?? 1));

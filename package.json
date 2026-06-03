@@ -11,6 +11,11 @@
     "README.md"
   ],
   "scripts": {
+    "n-link": "npm link",
+    "n-unlink": "npm unlink @metav_xly/codexx",
+    "n-login": "npm login --registry=https://registry.npmjs.org",
+    "n-create-tag": "git tag v%npm_package_version% && git push origin v%npm_package_version%",
+    "n-publish": "npm run n-create-tag && npm publish --tag=latest --registry=https://registry.npmjs.org",
     "test": "node --test"
   },
   "keywords": [
