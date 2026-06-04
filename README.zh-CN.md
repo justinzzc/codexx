@@ -104,6 +104,8 @@ codexx resume --native --provider openai
 
 ```powershell
 codexx resume
+codexx --version
+codexx -v
 codexx resume --latest
 codexx resume --latest --dry-run
 codexx resume --provider openai
@@ -117,6 +119,7 @@ codexx resume --native --provider custom
 
 | 参数 | 说明 |
 | --- | --- |
+| `-v`, `--version` | 显示当前安装的 `codexx` 版本。 |
 | `--cwd <path>` | 指定要匹配的工作目录。默认是当前目录。 |
 | `--provider <name>` | 只显示某个 provider 的会话。在 `--native` 模式下会跳过 provider 选择。 |
 | `--include-subagents` | 包含 helper/subagent 子代理线程。默认隐藏，避免普通 resume 列表被底层线程刷屏。 |

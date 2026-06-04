@@ -107,6 +107,8 @@ codexx resume --native --provider openai
 
 ```powershell
 codexx resume
+codexx --version
+codexx -v
 codexx resume --latest
 codexx resume --latest --dry-run
 codexx resume --provider openai
@@ -120,6 +122,7 @@ codexx resume --native --provider custom
 
 | Option | Description |
 | --- | --- |
+| `-v`, `--version` | Show the installed `codexx` version. |
 | `--cwd <path>` | Match sessions for a specific working directory. Defaults to the current directory. |
 | `--provider <name>` | Filter to one provider. In `--native` mode, skips the provider picker. |
 | `--include-subagents` | Include helper/subagent threads. Hidden by default to keep the list close to normal user-facing sessions. |

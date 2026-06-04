@@ -3,6 +3,7 @@
 const { spawn } = require("node:child_process");
 const path = require("node:path");
 const readline = require("node:readline/promises");
+const packageJson = require("../package.json");
 
 const {
   buildNativeResumeCommand,
@@ -21,6 +22,7 @@ function printUsage() {
   codexx resume [options]
 
 Options:
+  -v, --version               Show codexx version.
   --cwd <path>                Directory to match. Defaults to the current directory.
   --provider <name>           Optional provider filter.
   --include-subagents         Include subagent/helper threads. Hidden by default.
@@ -38,6 +40,7 @@ function parseArgs(argv) {
   const [command, ...rest] = argv;
   const options = {
     command,
+    version: command === "-v" || command === "--version",
     cwd: process.cwd(),
     provider: "",
     includeSubagents: false,
@@ -223,6 +226,11 @@ async function main() {
     console.error(error.message);
     printUsage();
     return 1;
+  }
+
+  if (options.version) {
+    console.log(packageJson.version);
+    return 0;
   }
 
   if (options.help || !options.command) {
