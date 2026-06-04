@@ -28,6 +28,9 @@ codex resume
 旧会话可能不出现在列表里。这个时候 `codexx resume` 会直接扫描
 `~/.codex/sessions/**/*.jsonl`，按当前工作目录 `cwd` 过滤，把所有 provider 下的匹配会话都列出来。
 
+默认情况下，`codexx` 会隐藏 helper/subagent 这类子代理线程，让列表更接近普通用户会话。
+如果你确实想查看这些底层线程，可以加 `--include-subagents`。
+
 ## 安装
 
 ```powershell
@@ -47,6 +50,9 @@ codexx resume
 示例输出：
 
 ```text
+Matched cwd: C:\path\to\project
+Found 3 sessions.
+
  1. 2026-06-03T01:19:15.977Z  [custom]  为什么 resume 找不到旧会话  019e8b10-...
  2. 2026-06-02T03:07:57.494Z  [openai]  分析当前架构  019e864d-...
  3. 2026-06-01T10:17:09.954Z  [openai]  检验飞书 CLI adapter  019e82af-...
@@ -101,6 +107,7 @@ codexx resume
 codexx resume --latest
 codexx resume --latest --dry-run
 codexx resume --provider openai
+codexx resume --include-subagents
 codexx resume --cwd C:\path\to\project
 codexx resume --native
 codexx resume --native --provider custom
@@ -112,6 +119,7 @@ codexx resume --native --provider custom
 | --- | --- |
 | `--cwd <path>` | 指定要匹配的工作目录。默认是当前目录。 |
 | `--provider <name>` | 只显示某个 provider 的会话。在 `--native` 模式下会跳过 provider 选择。 |
+| `--include-subagents` | 包含 helper/subagent 子代理线程。默认隐藏，避免普通 resume 列表被底层线程刷屏。 |
 | `--latest` | 直接恢复最近更新的匹配会话。 |
 | `--native` | 先选择 provider，然后进入 Codex 原生 `resume` 界面。 |
 | `--dry-run` | 只打印将要执行的 `codex` 命令，不真正执行。 |

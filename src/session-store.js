@@ -125,6 +125,7 @@ async function readSessionMeta(sessionPath) {
           id: payload.id,
           cwd: payload.cwd,
           provider: payload.model_provider || "",
+          threadSource: payload.thread_source || "",
           timestamp: payload.timestamp || record.timestamp || "",
           path: sessionPath,
           threadName: "",
@@ -180,7 +181,7 @@ async function collectSessionFiles(root) {
   return files;
 }
 
-async function findSessions({ codexHome, cwd, sessionIndex = new Map(), provider = "" }) {
+async function findSessions({ codexHome, cwd, sessionIndex = new Map(), provider = "", includeSubagents = false }) {
   const targetCwd = normalizePath(cwd);
   const files = await collectSessionFiles(path.join(codexHome, "sessions"));
   const sessions = [];
@@ -194,6 +195,9 @@ async function findSessions({ codexHome, cwd, sessionIndex = new Map(), provider
       continue;
     }
     if (provider && session.provider !== provider) {
+      continue;
+    }
+    if (!includeSubagents && session.threadSource === "subagent") {
       continue;
     }
 
@@ -271,6 +275,10 @@ function formatProvider(index, provider) {
   return [header, ...previews].join("\n");
 }
 
+function formatResumeScope(cwd, sessions) {
+  return `Matched cwd: ${cwd}\nFound ${sessions.length} sessions.`;
+}
+
 function formatSession(index, session) {
   const provider = session.provider || "unknown";
   const title = session.threadName || "(untitled)";
@@ -284,6 +292,7 @@ module.exports = {
   defaultCodexHome,
   findSessions,
   formatProvider,
+  formatResumeScope,
   formatSession,
   groupProviders,
   loadSessionIndex,

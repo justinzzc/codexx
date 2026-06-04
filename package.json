@@ -1,6 +1,6 @@
 {
   "name": "@metav_xly/codexx",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Resume Codex CLI sessions for the current working directory across providers.",
   "repository": {
     "type": "git",

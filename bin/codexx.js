@@ -10,6 +10,7 @@ const {
   defaultCodexHome,
   findSessions,
   formatProvider,
+  formatResumeScope,
   formatSession,
   groupProviders,
   loadSessionIndex,
@@ -22,6 +23,7 @@ function printUsage() {
 Options:
   --cwd <path>                Directory to match. Defaults to the current directory.
   --provider <name>           Optional provider filter.
+  --include-subagents         Include subagent/helper threads. Hidden by default.
   --native                    Select a provider, then enter Codex's native resume picker.
   --latest                    Resume the most recently updated matching session.
   --dry-run                   Print the codex command instead of running it.
@@ -38,6 +40,7 @@ function parseArgs(argv) {
     command,
     cwd: process.cwd(),
     provider: "",
+    includeSubagents: false,
     native: false,
     latest: false,
     dryRun: false,
@@ -53,6 +56,8 @@ function parseArgs(argv) {
       options.latest = true;
     } else if (arg === "--native") {
       options.native = true;
+    } else if (arg === "--include-subagents") {
+      options.includeSubagents = true;
     } else if (arg === "--dry-run") {
       options.dryRun = true;
     } else if (arg === "--no-provider-override") {
@@ -82,7 +87,9 @@ function parseArgs(argv) {
   return options;
 }
 
-async function chooseSession(sessions) {
+async function chooseSession(sessions, cwd) {
+  console.log(formatResumeScope(cwd, sessions));
+  console.log("");
   for (const [index, session] of sessions.entries()) {
     console.log(formatSession(index + 1, session));
   }
@@ -104,7 +111,9 @@ async function chooseSession(sessions) {
   }
 }
 
-async function chooseProvider(providers) {
+async function chooseProvider(providers, cwd, sessions) {
+  console.log(formatResumeScope(cwd, sessions));
+  console.log("");
   for (const [index, provider] of providers.entries()) {
     console.log(formatProvider(index + 1, provider));
   }
@@ -143,6 +152,7 @@ async function resume(options) {
     cwd: options.cwd,
     sessionIndex,
     provider: options.provider,
+    includeSubagents: options.includeSubagents,
   });
 
   if (sessions.length === 0) {
@@ -154,7 +164,7 @@ async function resume(options) {
     const providers = groupProviders(sessions);
     const selectedProvider = options.provider
       ? providers.find((provider) => provider.provider === options.provider)
-      : await chooseProvider(providers);
+      : await chooseProvider(providers, options.cwd, sessions);
     if (!selectedProvider) {
       console.error("No provider selected.");
       return 1;
@@ -173,7 +183,7 @@ async function resume(options) {
     return await runCommand(command);
   }
 
-  const session = options.latest ? sessions[0] : await chooseSession(sessions);
+  const session = options.latest ? sessions[0] : await chooseSession(sessions, options.cwd);
   if (!session) {
     console.error("No session selected.");
     return 1;

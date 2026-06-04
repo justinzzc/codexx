@@ -8,13 +8,14 @@ const {
   buildNativeResumeCommand,
   buildResumeCommand,
   findSessions,
+  formatResumeScope,
   formatProvider,
   groupProviders,
   loadSessionIndex,
   normalizePath,
 } = require("../src/session-store");
 
-async function writeSession(root, day, sessionId, cwd, provider, timestamp) {
+async function writeSession(root, day, sessionId, cwd, provider, timestamp, extraPayload = {}) {
   const sessionDir = path.join(root, "sessions", "2026", "06", day);
   await mkdir(sessionDir, { recursive: true });
   const safeTimestamp = timestamp.replaceAll(":", "-");
@@ -27,6 +28,7 @@ async function writeSession(root, day, sessionId, cwd, provider, timestamp) {
       timestamp,
       cwd,
       model_provider: provider,
+      ...extraPayload,
     },
   };
   await writeFile(sessionPath, `${JSON.stringify(meta)}\n`, "utf8");
@@ -63,6 +65,39 @@ test("findSessions filters by cwd without filtering provider", async () => {
   assert.deepEqual(
     sessions.map((session) => session.provider),
     ["custom", "openai"],
+  );
+});
+
+test("findSessions excludes subagent threads by default", async () => {
+  const codexHome = await mkdtemp(path.join(os.tmpdir(), "codexx-"));
+  const cwd = "C:\\work\\project";
+  await writeSession(codexHome, "01", "user-id", cwd, "openai", "2026-06-01T10:00:00Z", {
+    thread_source: "user",
+  });
+  await writeSession(codexHome, "02", "subagent-id", cwd, "openai", "2026-06-02T10:00:00Z", {
+    thread_source: "subagent",
+  });
+
+  const sessions = await findSessions({ codexHome, cwd });
+
+  assert.deepEqual(sessions.map((session) => session.id), ["user-id"]);
+});
+
+test("findSessions can include subagent threads explicitly", async () => {
+  const codexHome = await mkdtemp(path.join(os.tmpdir(), "codexx-"));
+  const cwd = "C:\\work\\project";
+  await writeSession(codexHome, "01", "user-id", cwd, "openai", "2026-06-01T10:00:00Z", {
+    thread_source: "user",
+  });
+  await writeSession(codexHome, "02", "subagent-id", cwd, "openai", "2026-06-02T10:00:00Z", {
+    thread_source: "subagent",
+  });
+
+  const sessions = await findSessions({ codexHome, cwd, includeSubagents: true });
+
+  assert.deepEqual(
+    sessions.map((session) => session.id),
+    ["subagent-id", "user-id"],
   );
 });
 
@@ -137,6 +172,13 @@ test("formatProvider renders count and session previews", () => {
   assert.equal(
     text,
     " 1. [openai]  2 sessions\n    - 2026-06-03T10:00:00Z  Analyze architecture\n    - 2026-06-02T10:00:00Z  (untitled)",
+  );
+});
+
+test("formatResumeScope shows matched cwd and total sessions", () => {
+  assert.equal(
+    formatResumeScope("C:\\work\\project", [{}, {}, {}]),
+    "Matched cwd: C:\\work\\project\nFound 3 sessions.",
   );
 });
 

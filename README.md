@@ -29,6 +29,9 @@ exists in `~/.codex/sessions`.
 `codexx resume` reads those files directly, filters them by `cwd`, and shows the
 matching sessions from every provider.
 
+By default, helper/subagent threads are hidden. Use `--include-subagents` when
+you explicitly want to inspect those lower-level threads.
+
 ## Install
 
 ```powershell
@@ -48,6 +51,9 @@ codexx resume
 Example output:
 
 ```text
+Matched cwd: C:\path\to\project
+Found 3 sessions.
+
  1. 2026-06-03T01:19:15.977Z  [custom]  Fix missing resume session  019e8b10-...
  2. 2026-06-02T03:07:57.494Z  [openai]  Analyze current architecture  019e864d-...
  3. 2026-06-01T10:17:09.954Z  [openai]  Validate Lark CLI adapter  019e82af-...
@@ -104,6 +110,7 @@ codexx resume
 codexx resume --latest
 codexx resume --latest --dry-run
 codexx resume --provider openai
+codexx resume --include-subagents
 codexx resume --cwd C:\path\to\project
 codexx resume --native
 codexx resume --native --provider custom
@@ -115,6 +122,7 @@ codexx resume --native --provider custom
 | --- | --- |
 | `--cwd <path>` | Match sessions for a specific working directory. Defaults to the current directory. |
 | `--provider <name>` | Filter to one provider. In `--native` mode, skips the provider picker. |
+| `--include-subagents` | Include helper/subagent threads. Hidden by default to keep the list close to normal user-facing sessions. |
 | `--latest` | Resume the most recently updated matching session. |
 | `--native` | Select a provider, then enter Codex's native `resume` picker. |
 | `--dry-run` | Print the `codex` command instead of running it. |
